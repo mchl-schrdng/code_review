@@ -16,9 +16,13 @@ def get_file_content(file_path):
 def get_changed_files(pr):
     # Clone the repository and checkout the PR branch
     repo = git.Repo.clone_from(pr.base.repo.clone_url, to_path='./repo', branch=pr.head.ref)
-    
+
+    # Get the base and head references
+    base_ref = repo.commit(pr.base.ref).hexsha
+    head_ref = repo.commit(pr.head.ref).hexsha
+
     # Get the difference between the PR branch and the base branch
-    diffs = repo.git.diff(pr.base.ref.name, pr.head.ref.name, name_only=True).split('\n')
+    diffs = repo.git.diff(base_ref, head_ref, name_only=True).split('\n')
 
     # Initialize an empty dictionary to store file contents
     files = {}
