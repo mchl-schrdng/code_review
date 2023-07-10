@@ -101,7 +101,6 @@ def post_comment(pr, comment):
     # Post the OpenAI's response as a comment on the PR
     pr.create_issue_comment(comment)
 
-
 def main():
     """
     The main function orchestrates the operations of:
@@ -125,7 +124,6 @@ def main():
 
     # Post the review as a comment on the pull request
     post_comment(pr, review)
-
 
 if __name__ == "__main__":
     main()  # Execute the main function
