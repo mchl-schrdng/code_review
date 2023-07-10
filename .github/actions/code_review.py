@@ -42,8 +42,10 @@ def send_to_openai(files):
     message = openai.ChatCompletion.create(
         model="gpt-4", # use the latest GPT model available
         messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": "Review the following code:\n" + code},
+            {
+                "role": "user", 
+                "content": "You are acting as a code reviewer. Your task is to review the following code and provide suggestions for improvement, point out potential issues, and evaluate the overall following code quality:\n" + code"
+            }
         ],
     )
 
