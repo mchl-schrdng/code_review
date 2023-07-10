@@ -22,6 +22,9 @@ Follow these steps to set up code review with OpenAI:
 
 4. Install dependencies: Ensure you have Python 3.9 installed. In the root directory of the repository, run the following command to install the required dependencies:
 
+```shell
+pip install openai PyGithub GitPython
+
 ## Usage
 
 To use the code review functionality, follow these steps:
