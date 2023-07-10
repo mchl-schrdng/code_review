@@ -3,17 +3,37 @@ import openai
 from github import Github
 import git
 import json
+import textwrap
 
-# Set the OpenAI API key from environment variables
+# Load OpenAI API key from environment
 openai.api_key = os.getenv('OPENAI_API_KEY')
 
-# Function to read the content of a file
+# Set the maximum token limit for GPT-4
+TOKEN_LIMIT = 4000
+
 def get_file_content(file_path):
+    """
+    This function reads the content of a file.
+
+    Args:
+        file_path (str): The path to the file.
+
+    Returns:
+        str: The content of the file.
+    """
     with open(file_path, 'r') as file:
         return file.read()
 
-# Function to fetch the files changed in a pull request
 def get_changed_files(pr):
+    """
+    This function fetches the files that were changed in a pull request.
+
+    Args:
+        pr (PullRequest): The pull request object.
+
+    Returns:
+        dict: A dictionary containing the file paths as keys and their content as values.
+    """
     # Clone the repository and checkout the PR branch
     repo = git.Repo.clone_from(pr.base.repo.clone_url, to_path='./repo', branch=pr.head.ref)
 
@@ -33,32 +53,62 @@ def get_changed_files(pr):
 
     return files
 
-# Function to send the changed files to OpenAI for review
 def send_to_openai(files):
+    """
+    This function sends the changed files to OpenAI for review.
+
+    Args:
+        files (dict): A dictionary containing the file paths as keys and their content as values.
+
+    Returns:
+        str: The review returned by OpenAI.
+    """
     # Concatenate all the files into a single string
     code = '\n'.join(files.values())
 
-    # Send a message to OpenAI with the code for review
-    message = openai.ChatCompletion.create(
-        model="gpt-4", # use the latest GPT model available
-        messages=[
-            {
-                "role": "user", 
-                "content": "You are acting as a code reviewer. Your task is to review the following code and provide suggestions for improvement, point out potential issues, and evaluate the overall following code quality:\n" + code
-            }
-        ],
-    )
+    # Split the code into chunks that are each within the token limit
+    chunks = textwrap.wrap(code, TOKEN_LIMIT)
 
-    # Return the OpenAI's assistant's reply
-    return message['choices'][0]['message']['content']
+    reviews = []
+    for chunk in chunks:
+        # Send a message to OpenAI with each chunk of the code for review
+        message = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {
+                    "role": "user",
+                    "content": "You are acting as a code reviewer. Your task is to review the following code and provide suggestions for improvement, point out potential issues, and evaluate the overall following code quality:\n" + chunk
+                }
+            ],
+        )
 
-# Function to post a comment on the pull request with the review
+        # Add the assistant's reply to the list of reviews
+        reviews.append(message['choices'][0]['message']['content'])
+
+    # Join all the reviews into a single string
+    review = "\n".join(reviews)
+
+    return review
+
 def post_comment(pr, comment):
+    """
+    This function posts a comment on the pull request with the review.
+
+    Args:
+        pr (PullRequest): The pull request object.
+        comment (str): The comment to post.
+    """
     # Post the OpenAI's response as a comment on the PR
     pr.create_issue_comment(comment)
 
-# Main function to orchestrate the above operations
+
 def main():
+    """
+    The main function orchestrates the operations of:
+    1. Fetching changed files from a PR
+    2. Sending those files to OpenAI for review
+    3. Posting the review as a comment on the PR
+    """
     # Get the pull request event JSON
     with open(os.getenv('GITHUB_EVENT_PATH')) as json_file:
         event = json.load(json_file)
@@ -75,6 +125,7 @@ def main():
 
     # Post the review as a comment on the pull request
     post_comment(pr, review)
+
 
 if __name__ == "__main__":
     main()  # Execute the main function
