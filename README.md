@@ -71,6 +71,10 @@ You can customize the behavior of the code review process by modifying the `code
 
 - Extending the review process: If you want to perform additional actions based on the review, you can modify the `post_comment` function or add new functions as needed.
 
+## Warning
+
+While leveraging the power of the ChatGPT API and external services like OpenAI can be incredibly beneficial, it’s crucial to exercise caution when dealing with sensitive code. The ChatGPT model processes data externally, which means the code you submit for review is shared with the OpenAI infrastructure. It’s essential to ensure that the code being reviewed does not contain any sensitive information that you are not comfortable sharing with an external company.
+
 ## Conclusion
 
 By following the setup instructions above, you can enable code reviews using OpenAI's language model directly on your GitHub repository. The system will generate reviews for pull requests, helping to identify problematic code, highlight potential issues, and evaluate the overall quality of the code. Customize the code and workflow to suit your specific needs and improve your code review process.
