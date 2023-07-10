@@ -1,56 +1,129 @@
-# Code Review with OpenAI
+import os
+import openai
+from github import Github
+import git
+import json
+import textwrap
 
-This repository contains code that enables you to perform code reviews using OpenAI's language model. The code utilizes the OpenAI API, along with the GitHub Actions workflow, to automate the process of reviewing code changes in pull requests.
+# Load OpenAI API key from environment
+openai.api_key = os.getenv('OPENAI_API_KEY')
 
-## Prerequisites
+# Set the maximum token limit for GPT-4
+TOKEN_LIMIT = 4000
 
-Before using this code, make sure you have the following:
+def get_file_content(file_path):
+    """
+    This function reads the content of a file.
 
-- OpenAI API key: You need an API key to interact with OpenAI's language model. If you don't have one, sign up for OpenAI and obtain your API key.
-- GitHub repository: You should have a GitHub repository where you want to enable code reviews. Ensure that you have the necessary permissions to add workflows and access pull requests.
+    Args:
+        file_path (str): The path to the file.
 
-## Setup
+    Returns:
+        str: The content of the file.
+    """
+    with open(file_path, 'r') as file:
+        return file.read()
 
-Follow these steps to set up code review with OpenAI:
+def get_changed_files(pr):
+    """
+    This function fetches the files that were changed in a pull request.
 
-1. Clone the repository: Clone the repository to your local machine or navigate to the existing repository where you want to add code review functionality.
+    Args:
+        pr (PullRequest): The pull request object.
 
-2. Configure API key: Set up the OpenAI API key by assigning it to the `OPENAI_API_KEY` environment variable. You can do this by adding the following line to your environment variables or secrets:
+    Returns:
+        dict: A dictionary containing the file paths as keys and their content as values.
+    """
+    # Clone the repository and checkout the PR branch
+    repo = git.Repo.clone_from(pr.base.repo.clone_url, to_path='./repo', branch=pr.head.ref)
 
+    # Get the difference between the PR branch and the base branch
+    base_ref = f"origin/{pr.base.ref}"
+    head_ref = f"origin/{pr.head.ref}"
+    diffs = repo.git.diff(base_ref, head_ref, name_only=True).split('\n')
 
-3. Configure GitHub token: To enable the workflow to access your GitHub repository, you need to set up a GitHub token and assign it to the `GITHUB_TOKEN` environment variable or secret. Ensure the token has the necessary permissions to access pull requests and post comments.
+    # Initialize an empty dictionary to store file contents
+    files = {}
+    for file_path in diffs:
+        try:
+            # Fetch each file's content and store it in the files dictionary
+            files[file_path] = get_file_content('./repo/' + file_path)
+        except Exception as e:
+            print(f"Failed to read {file_path}: {e}")
 
-4. Install dependencies: Ensure you have Python 3.9 installed. In the root directory of the repository, run the following command to install the required dependencies:
+    return files
 
-## Usage
+def send_to_openai(files):
+    """
+    This function sends the changed files to OpenAI for review.
 
-To use the code review functionality, follow these steps:
+    Args:
+        files (dict): A dictionary containing the file paths as keys and their content as values.
 
-1. Create a workflow file: In your repository, navigate to the `.github/workflows/` directory and create a new file called `code_review.yml`. Copy and paste the provided YAML code into this file.
+    Returns:
+        str: The review returned by OpenAI.
+    """
+    # Concatenate all the files into a single string
+    code = '\n'.join(files.values())
 
-2. Configure workflow triggers: By default, the workflow triggers on every pull request event. If you want to customize the triggering conditions, modify the `on` section in the `code_review.yml` file.
+    # Split the code into chunks that are each within the token limit
+    chunks = textwrap.wrap(code, TOKEN_LIMIT)
 
-3. Run the review: Whenever a pull request is opened or updated, the workflow will automatically execute. It will clone the repository, install the dependencies, and run the `code_review.py` script. The script performs the following steps:
+    reviews = []
+    for chunk in chunks:
+        # Send a message to OpenAI with each chunk of the code for review
+        message = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {
+                    "role": "user",
+                    "content": "You are assigned as a code reviewer. Your responsibility is to review the provided code and offer recommendations for enhancement. Identify any problematic code snippets, highlight potential issues, and evaluate the overall quality of the code you review:\n" + chunk
+                }
+            ],
+        )
 
-- Fetches the changed files from the pull request.
-- Sends the files to OpenAI for review.
-- Posts the review as a comment on the pull request.
+        # Add the assistant's reply to the list of reviews
+        reviews.append(message['choices'][0]['message']['content'])
 
-4. View the review: After the workflow completes, you can visit the pull request on GitHub to see the code review posted as a comment. The review includes recommendations for enhancement, identification of problematic code snippets, highlighting of potential issues, and an overall evaluation of the code.
+    # Join all the reviews into a single string
+    review = "\n".join(reviews)
 
-## Customization
+    return review
 
-You can customize the behavior of the code review process by modifying the `code_review.py` file. Here are a few possible modifications:
+def post_comment(pr, comment):
+    """
+    This function posts a comment on the pull request with the review.
 
-- Adjusting the token limit: The `TOKEN_LIMIT` variable sets the maximum token limit for the language model. You can modify this value according to your requirements.
+    Args:
+        pr (PullRequest): The pull request object.
+        comment (str): The comment to post.
+    """
+    # Post the OpenAI's response as a comment on the PR
+    pr.create_issue_comment(comment)
 
-- Modifying the review prompt: The initial user message to OpenAI can be customized by modifying the `content` field in the `messages` list.
+def main():
+    """
+    The main function orchestrates the operations of:
+    1. Fetching changed files from a PR
+    2. Sending those files to OpenAI for review
+    3. Posting the review as a comment on the PR
+    """
+    # Get the pull request event JSON
+    with open(os.getenv('GITHUB_EVENT_PATH')) as json_file:
+        event = json.load(json_file)
+    
+    # Instantiate the Github object using the Github token
+    # and get the pull request object
+    pr = Github(os.getenv('GITHUB_TOKEN')).get_repo(event['repository']['full_name']).get_pull(event['number'])
 
-- Adding error handling: You can enhance the error handling logic in the code to handle specific scenarios or exceptions more effectively.
+    # Get the changed files in the pull request
+    files = get_changed_files(pr)
 
-- Extending the review process: If you want to perform additional actions based on the review, you can modify the `post_comment` function or add new functions as needed.
+    # Send the files to OpenAI for review
+    review = send_to_openai(files)
 
-## Conclusion
+    # Post the review as a comment on the pull request
+    post_comment(pr, review)
 
-With this code and workflow configuration, you can automate code reviews using OpenAI's language model. The system will generate reviews for pull requests, helping to identify problematic code, highlight potential issues, and evaluate the overall quality of the code. Customize the code and workflow to suit your specific needs and improve your code review process.
-
+if __name__ == "__main__":
+    main()  # Execute the main function
