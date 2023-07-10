@@ -44,7 +44,7 @@ def send_to_openai(files):
         messages=[
             {
                 "role": "user", 
-                "content": "You are acting as a code reviewer. Your task is to review the following code and provide suggestions for improvement, point out potential issues, and evaluate the overall following code quality:\n" + code"
+                "content": "You are acting as a code reviewer. Your task is to review the following code and provide suggestions for improvement, point out potential issues, and evaluate the overall following code quality:\n" + code
             }
         ],
     )
