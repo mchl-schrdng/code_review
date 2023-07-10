@@ -24,6 +24,7 @@ Follow these steps to set up code review with OpenAI:
 
 ```shell
 pip install openai PyGithub GitPython
+```
 
 ## Usage
 
