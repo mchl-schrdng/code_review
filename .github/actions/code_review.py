@@ -73,7 +73,7 @@ def send_to_openai(files):
     for chunk in chunks:
         # Send a message to OpenAI with each chunk of the code for review
         message = openai.ChatCompletion.create(
-            model="text-davinci-003",
+            model="gpt-3.5-turbo",
             messages=[
                 {
                     "role": "user",
