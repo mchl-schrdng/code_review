@@ -27,7 +27,7 @@ jobs:
         id: generate_message
         run: python path/to/generate_commit_msg.py
         env:
-          CHATGPT_API_KEY: ${{ secrets.CHATGPT_API_KEY }}
+          CHATGPT_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           
       - name: Amend commit with new message
         uses: stefanzweifel/git-auto-commit-action@v4
