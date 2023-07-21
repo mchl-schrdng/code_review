@@ -10,31 +10,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0  # Fetches all commits (needed to access prior commits)
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Set Git identity
-        run: |
-          git config user.email "action@github.com"
-          git config user.name "GitHub Action"
+    - name: Set Git identity
+      run: |
+        git config user.email "action@github.com"
+        git config user.name "GitHub Action"
 
-      - name: Setup Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
 
-      - name: Install OpenAI SDK
-        run: pip install openai
+    - name: Install OpenAI SDK
+      run: pip install openai
 
-      - name: Run script to generate commit message
-        run: python .github/actions/generate_commit_message.py
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          
-      - name: Push amended commit back to the repository
-        run: |
-          git push origin main --force-with-lease
-        env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+    - name: Run script to generate commit message
+      run: python .github/actions/generate_commit_message.py
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+    - name: Push amended commit
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git remote set-url origin https://x-access-token:${{ secrets.MY_PERSONAL_TOKEN }}@github.com/mchl-schrdng/code_review.git
+        git push origin main --force-with-lease
+      env:
+        MY_PERSONAL_TOKEN: ${{ secrets.MY_PERSONAL_TOKEN }}
