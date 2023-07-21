@@ -24,7 +24,6 @@ def get_commit_message(diff):
       max_tokens=150
     )
     return response.choices[0].text.strip()
-    print(f"Generated Prompt: {prompt}")
 
 def main():
     diff = get_code_diff()
