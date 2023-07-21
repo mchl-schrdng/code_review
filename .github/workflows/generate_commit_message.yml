@@ -1,5 +1,6 @@
 name: Generate Commit Message
 
+# Trigger the workflow on a push event to the main branch.
 on:
   push:
     branches:
@@ -13,31 +14,32 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v2
       with:
-        fetch-depth: 2  # Fetch the last two commits so we can diff
+        fetch-depth: 2  # Fetch the last two commits to perform a diff later.
 
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: 3.11
+        python-version: 3.11  # Specify Python version.
 
     - name: Install OpenAI
-      run: pip install openai
-      
+      run: pip install openai  # Install the necessary OpenAI library.
+
+    # Set the Git user so that commits from this action are attributed to github-actions[bot].
     - name: Set up Git user
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
     - name: Generate Commit Message
-      run: python .github/actions/generate_commit_message.py
+      run: python .github/actions/generate_commit_message.py  # Run the commit message script.
       env:
-        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}  # Provide the OpenAI API key from GitHub secrets.
 
+    # Configure Git to push using the provided token.
     - name: Set up Git for push
       run: |
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
         git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/mchl-schrdng/code_review.git
 
+    # Push the amended commit to the main branch.
     - name: Push changes
       run: git push origin main --force-with-lease
