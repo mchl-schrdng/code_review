@@ -30,17 +30,29 @@ def get_commit_message(diff):
     if diff == "init commit":
         return diff
 
+        # Constructing a prompt to guide the model in choosing the right emoticon
+    context = ("You are an AI code reviewer. Your task is to understand the nature of "
+               "the code changes and provide a concise commit message. Use emoticons to "
+               "add context: \n\n"
+               "✨ for new features\n"
+               "🐛 for bug fixes\n"
+               "📚 for documentation updates\n"
+               "🚀 for performance improvements\n"
+               "🧹 for cleaning up code\n"
+               "⚙️ for configuration changes\n\n"
+               "Based on the following code changes, what would be the appropriate commit message?")
+
     # Using the ChatCompletion interface to interact with gpt-3.5-turbo
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[
             {
                 "role": "system",
-                "content": "You are a helpful assistant."
+                "content": context
             },
             {
                 "role": "user",
-                "content": f"Describe these code changes in one sentence: {diff}"
+                "content": f"Code changes: {diff}"
             }
         ]
     )
