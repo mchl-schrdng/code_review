@@ -30,3 +30,6 @@ jobs:
         run: python .github/actions/generate_commit_message.py
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          
+      - name: Display Generated Prompt
+        run: echo "Generated Prompt: $OUTPUT"
