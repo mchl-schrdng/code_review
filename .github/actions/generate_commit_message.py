@@ -68,8 +68,8 @@ def get_commit_message(diff):
 def main():
     """Main function to generate and amend the commit message."""
     diff = get_code_diff()
-    commit_message = get_commit_message(diff)
-    subprocess.run(["git", "commit", "--amend", "-m", commit_message], check=True)
+    title, body = get_commit_message(diff)
+    subprocess.run(["git", "commit", "--amend", "-m", title, "-m", body], check=True)
 
 if __name__ == "__main__":
     main()
