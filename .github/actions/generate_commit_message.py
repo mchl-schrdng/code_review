@@ -30,14 +30,25 @@ def get_commit_message(diff):
     if diff == "init commit":
         return diff
 
-    prompt = f"Describe these code changes in one sentence: {diff}"
-    response = openai.Completion.create(
-        engine="davinci",
-        prompt=prompt,
-        max_tokens=15  # Limit to 15 tokens for brevity
+    # Using the ChatCompletion interface to interact with gpt-3.5-turbo
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a helpful assistant."
+            },
+            {
+                "role": "user",
+                "content": f"Describe these code changes in one sentence: {diff}"
+            }
+        ]
     )
     
-    return response.choices[0].text.strip()
+    # Extracting the assistant's message from the response
+    message_from_assistant = response.choices[0].message['content']
+    
+    return message_from_assistant.strip()
 
 def main():
     """Main function to generate and amend the commit message."""
