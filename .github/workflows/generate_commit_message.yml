@@ -17,6 +17,6 @@ jobs:
       - name: Install OpenAI SDK
         run: pip install openai
       - name: Run script to generate commit message
-        run: python generate_commit_message.py
+        run: python .github/actions/generate_commit_message.py
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
