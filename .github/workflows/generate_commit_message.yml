@@ -19,4 +19,4 @@ jobs:
       - name: Run script to generate commit message
         run: python generate_commit_message.py
         env:
-          CHATGPT_API_KEY: ${{ secrets.CHATGPT_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
