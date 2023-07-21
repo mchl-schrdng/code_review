@@ -1,48 +1,27 @@
-name: Generate Commit Message
+name: Code Review with OpenAI
 
 on:
-  push:
-    branches:
-      - main
+  pull_request:
 
 jobs:
-  generate_message:
+  review:
+    name: Automated Code Review
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
+    - name: Checkout repository
       uses: actions/checkout@v2
-      with:
-        fetch-depth: 2  # Fetch the last two commits so we can diff
 
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: 3.11
+        python-version: 3.9
 
-    - name: Install OpenAI
-      run: pip install openai
-
-    - name: Set up Git user
+    - name: Install dependencies
       run: |
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        pip install openai PyGithub GitPython
 
-    - name: Generate Commit Message
-      run: python .github/actions/generate_commit_message.py
+    - name: Run review
+      run: python .github/actions/code_review.py
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-
-    - name: Generate Commit Message
-      run: python .github/actions/generate_commit_message.py
-      env:
-        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-
-    - name: Set up Git for push
-      run: |
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/mchl-schrdng/code_review.git
-
-    - name: Push changes
-      run: git push origin main --force-with-lease
