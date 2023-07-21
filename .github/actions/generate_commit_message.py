@@ -1,34 +1,35 @@
-name: Generate Commit Message
+import os
+import openai
+import subprocess
 
-on:
-  push:
-    branches:
-      - main
+# Setup OpenAI SDK
+openai.api_key = os.environ["OPENAI_API_KEY"]
 
-jobs:
-  generate-message:
-    runs-on: ubuntu-latest
+def get_code_diff():
+    commit_count = int(subprocess.getoutput("git rev-list --count HEAD"))
+    if commit_count == 1:
+        return "init commit"
+    
+    # Get the diff for the latest commit
+    result = subprocess.getoutput("git diff HEAD^ --name-only")
+    return result
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0  # Fetches all commits (needed to access prior commits)
+def get_commit_message(diff):
+    if diff == "init commit":
+        return diff
+    
+    prompt = f"Describe these code changes in one sentence: {diff}"
+    response = openai.Completion.create(
+      engine="davinci",
+      prompt=prompt,
+      max_tokens=15  # Limiting the length of the response to around 100 characters
+    )
+    return response.choices[0].text.strip()
 
-      - name: Set Git identity
-        run: |
-          git config user.email "action@github.com"
-          git config user.name "GitHub Action"
+def main():
+    diff = get_code_diff()
+    commit_message = get_commit_message(diff)
+    subprocess.run(["git", "commit", "--amend", "-m", commit_message], check=True)
 
-      - name: Setup Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
-
-      - name: Install OpenAI SDK
-        run: pip install openai
-
-      - name: Run script to generate commit message
-        run: python .github/actions/generate_commit_message.py
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+if __name__ == "__main__":
+    main()
