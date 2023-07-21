@@ -25,7 +25,7 @@ jobs:
 
       - name: Generate commit message
         id: generate_message
-        run: python path/to/generate_commit_msg.py
+        run: python .github/actions/generate_commit_msg.py
         env:
           CHATGPT_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           
