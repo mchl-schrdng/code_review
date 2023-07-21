@@ -1,0 +1,36 @@
+name: Generate Commit Message with ChatGPT
+
+on:
+  push:
+    branches:
+      - main  # Adjust if you want this to run on branches other than "main".
+
+jobs:
+  generate-message:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install openai
+
+      - name: Generate commit message
+        id: generate_message
+        run: python path/to/generate_commit_msg.py
+        env:
+          CHATGPT_API_KEY: ${{ secrets.CHATGPT_API_KEY }}
+          
+      - name: Amend commit with new message
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "${{ steps.generate_message.outputs.message }}"
+          branch: ${{ github.head_ref }}
