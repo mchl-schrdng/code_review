@@ -23,6 +23,16 @@ jobs:
     - name: Install OpenAI
       run: pip install openai
 
+    - name: Set up Git user
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: Generate Commit Message
+      run: python .github/actions/generate_commit_message.py
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
     - name: Generate Commit Message
       run: python .github/actions/generate_commit_message.py
       env:
