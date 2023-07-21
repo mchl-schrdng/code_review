@@ -20,8 +20,8 @@ def get_code_diff():
 def get_commit_message(diff):
     response = openai.Completion.create(
       engine="davinci",
-      prompt=f"Explain the following code changes: {diff}",
-      max_tokens=150
+      prompt=f"Explain the following code changes succinctly: {diff}",
+      max_tokens=50
     )
     return response.choices[0].text.strip()
 
