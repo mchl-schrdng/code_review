@@ -3,7 +3,7 @@ import openai
 import subprocess
 
 # Setup OpenAI SDK
-openai.api_key = os.environ["CHATGPT_API_KEY"]
+openai.api_key = os.environ["OPENAI_API_KEY"]
 
 def get_code_diff():
     # Checkout the previous commit
