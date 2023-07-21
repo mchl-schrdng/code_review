@@ -1,0 +1,22 @@
+name: Generate Commit Message
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  generate-message:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Install OpenAI SDK
+        run: pip install openai
+      - name: Run script to generate commit message
+        run: python generate_commit_message.py
+        env:
+          CHATGPT_API_KEY: ${{ secrets.CHATGPT_API_KEY }}
