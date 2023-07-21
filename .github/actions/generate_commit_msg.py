@@ -1,13 +1,30 @@
 import os
-import subprocess
 import openai
+import git
 
 openai.api_key = os.environ.get('OPENAI_API_KEY')
 
-def get_code_diff():
-    """Retrieve the code difference for the latest commit."""
-    diff_command = ["git", "diff", "HEAD~1"]
-    return subprocess.check_output(diff_command).decode('utf-8')
+def get_diffs_for_file(repo, base_ref, head_ref, file_path):
+    """Gets the git diff for a specific file between two references."""
+    return repo.git.diff(base_ref, head_ref, file_path)
+
+def get_changed_files_diffs():
+    """Fetch the diffs of files that were changed in the latest commit."""
+    repo = git.Repo('./')  # Assumes the current directory is the repository
+
+    # Get the difference between the latest commit and its parent
+    base_ref = "HEAD^"
+    head_ref = "HEAD"
+    
+    changed_files = repo.git.diff(base_ref, head_ref, name_only=True).split('\n')
+
+    diffs = {}
+    for file_path in changed_files:
+        diffs[file_path] = get_diffs_for_file(repo, base_ref, head_ref, file_path)
+
+    # Combine all diffs into a single string
+    all_diffs = "\n".join(diffs.values())
+    return all_diffs
 
 def infer_emoji_from_message(message):
     """Infer an appropriate emoji based on the content of the commit message."""
@@ -49,6 +66,6 @@ def generate_commit_message(chunk):
     return f"{emoji} {message}"
 
 if __name__ == "__main__":
-    diff = get_code_diff()
+    diff = get_changed_files_diffs()
     commit_message = generate_commit_message(diff)
     print(f"::set-output name=message::{commit_message}")
