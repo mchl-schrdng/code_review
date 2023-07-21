@@ -28,4 +28,27 @@ def generate_commit_message(chunk):
         messages=[
             {
                 "role": "system",
-                "content": "You are an AI designed to
+                "content": "You are an AI designed to generate concise and informative commit messages based on provided code changes."
+            },
+            {
+                "role": "user",
+                "content": f"Given the code changes, provide a concise and descriptive commit message:\n{chunk}"
+            }
+        ],
+    )
+    
+    # Extract the content of the assistant's message from the response
+    message = response['choices'][0]['message']['content']
+    emoji = infer_emoji_from_message(message)
+    
+    # Truncate the message if it's too long (e.g., limit to 50 characters)
+    max_length = 50
+    if len(message) > max_length:
+        message = message[:max_length - 3] + "..."
+    
+    return f"{emoji} {message}"
+
+if __name__ == "__main__":
+    diff = get_code_diff()
+    commit_message = generate_commit_message(diff)
+    print(f"::set-output name=message::{commit_message}")
