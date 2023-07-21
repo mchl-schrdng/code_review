@@ -34,8 +34,7 @@ jobs:
       - name: Debug print commit message
         run: echo "${{ steps.generate_message.outputs.message }}"
           
-      - name: Amend commit with new message
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: "${{ steps.generate_message.outputs.message }}"
-          branch: ${{ github.head_ref }}
+      - name: Manually amend commit and push
+        run: |
+          git commit --amend -m "${{ steps.generate_message.outputs.message }}"
+          git push origin HEAD:refs/heads/main --force-with-lease
