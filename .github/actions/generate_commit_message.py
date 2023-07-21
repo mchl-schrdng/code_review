@@ -6,9 +6,13 @@ import subprocess
 openai.api_key = os.environ["OPENAI_API_KEY"]
 
 def get_code_diff():
-    # Get the diff for the last commit only
-    result = subprocess.run(["git", "diff", "HEAD^", "--name-only"], capture_output=True, check=True, text=True)
-    return result.stdout
+    try:
+        # Get the diff for the last commit only
+        result = subprocess.run(["git", "diff", "HEAD^", "--name-only"], capture_output=True, check=True, text=True)
+        return result.stdout
+    except subprocess.CalledProcessError:
+        # This could be the first commit, or there's an issue accessing the parent commit.
+        return "First commit or no previous reference found."
 
 def get_commit_message(diff):
     response = openai.Completion.create(
