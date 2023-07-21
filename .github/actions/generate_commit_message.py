@@ -6,9 +6,14 @@ import subprocess
 openai.api_key = os.environ["OPENAI_API_KEY"]
 
 def get_code_diff():
-    # Checkout the previous commit
+    # Check if there are at least two commits in the repo
+    commit_count = subprocess.run(["git", "rev-list", "--count", "HEAD"], capture_output=True, check=True, text=True).stdout.strip()
+    if int(commit_count) < 2:
+        # If it's the first commit, just return a string indicating this
+        return "First commit to the repository."
+    
+    # If there are prior commits, get the diff
     subprocess.run(["git", "checkout", "HEAD^1"], check=True)
-    # Get the diff
     result = subprocess.run(["git", "diff", "--name-only", "HEAD.."], capture_output=True, check=True, text=True)
     return result.stdout
 
