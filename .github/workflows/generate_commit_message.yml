@@ -32,3 +32,7 @@ jobs:
         run: python .github/actions/generate_commit_message.py
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          
+      - name: Push amended commit back to the repository
+        run: |
+          git push origin main --force-with-lease
