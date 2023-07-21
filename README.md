@@ -1,4 +1,4 @@
-# Code Review with OpenAI OpenAI    
+# Code Review with OpenAI OpenAI      
 
 This repository contains code that enables you to perform code reviews using OpenAI's language model. The code utilizes the OpenAI API, along with the GitHub Actions workflow, to automate the process of reviewing code changes in pull requests.
 
