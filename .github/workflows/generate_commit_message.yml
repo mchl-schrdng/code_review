@@ -36,3 +36,5 @@ jobs:
       - name: Push amended commit back to the repository
         run: |
           git push origin main --force-with-lease
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
