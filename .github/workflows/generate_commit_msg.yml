@@ -34,6 +34,13 @@ jobs:
       - name: Debug print commit message
         run: echo "${{ steps.generate_message.outputs.message }}"
           
+      - name: Configure Git user
+        run: |
+          # Use GitHub API to get email of the actor
+          EMAIL=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/users/${{ github.actor }} | jq .email -r)
+          git config user.email "$EMAIL"
+          git config user.name "${{ github.actor }}"
+
       - name: Manually amend commit and push
         run: |
           git commit --amend -m "${{ steps.generate_message.outputs.message }}"
