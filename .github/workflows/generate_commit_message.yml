@@ -35,7 +35,7 @@ jobs:
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        git remote set-url origin https://x-access-token:${{ secrets.MY_PERSONAL_TOKEN }}@github.com/mchl-schrdng/code_review.git
+        git remote set-url origin https://${{ secrets.MY_PERSONAL_TOKEN }}@github.com/mchl-schrdng/code_review.git
         git push origin main --force-with-lease
       env:
         MY_PERSONAL_TOKEN: ${{ secrets.MY_PERSONAL_TOKEN }}
