@@ -25,22 +25,21 @@ def get_commit_message(diff):
         diff (str): Description of code difference.
 
     Returns:
-        str: Generated commit message.
+        str: Generated commit message with an emoticon prefix and a body.
     """
     if diff == "init commit":
         return diff
 
-        # Constructing a prompt to guide the model in choosing the right emoticon
-    context = ("You are an AI code reviewer. Your task is to understand the nature of "
-               "the code changes and provide a concise commit message. Use emoticons to "
-               "add context: \n\n"
+    # Constructing a prompt to guide the model
+    context = ("You are an AI code reviewer. Generate a commit message with a title and a body. "
+               "The title should start with an appropriate emoticon: \n\n"
                "✨ for new features\n"
                "🐛 for bug fixes\n"
                "📚 for documentation updates\n"
                "🚀 for performance improvements\n"
                "🧹 for cleaning up code\n"
                "⚙️ for configuration changes\n\n"
-               "Based on the following code changes, what would be the appropriate commit message?")
+               "Start with 'Title:' for the title and 'Body:' for the detailed description. Here are the code changes:")
 
     # Using the ChatCompletion interface to interact with gpt-3.5-turbo
     response = openai.ChatCompletion.create(
@@ -52,15 +51,19 @@ def get_commit_message(diff):
             },
             {
                 "role": "user",
-                "content": f"Code changes: {diff}"
+                "content": f"{diff}"
             }
         ]
     )
     
-    # Extracting the assistant's message from the response
+    # Extracting the assistant's message from the response and parsing it
     message_from_assistant = response.choices[0].message['content']
     
-    return message_from_assistant.strip()
+    # Extract the title and body from the model's response
+    title = message_from_assistant.split('Title:')[1].split('Body:')[0].strip()
+    body = message_from_assistant.split('Body:')[1].strip()
+    
+    return title, body
 
 def main():
     """Main function to generate and amend the commit message."""
