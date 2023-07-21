@@ -28,6 +28,7 @@ def get_commit_message(diff):
 def main():
     diff = get_code_diff()
     commit_message = get_commit_message(diff)
+    print(commit_message)  # This will print the commit message to standard output
     # Amend the latest commit with the generated message
     subprocess.run(["git", "commit", "--amend", "-m", commit_message], check=True)
 
