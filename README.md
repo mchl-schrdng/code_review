@@ -78,7 +78,3 @@ While leveraging the power of the ChatGPT API and external services like OpenAI 
 ## Conclusion
 
 By following the setup instructions above, you can enable code reviews using OpenAI's language model directly on your GitHub repository. The system will generate reviews for pull requests, helping to identify problematic code, highlight potential issues, and evaluate the overall quality of the code. Customize the code and workflow to suit your specific needs and improve your code review process.
-
-## Conclusion
-
-By following the setup instructions above, you can enable code reviews using OpenAI's language model directly on your GitHub repository. The system will generate reviews for pull requests, helping to identify problematic code, highlight potential issues, and evaluate the overall quality of the code. Customize the code and workflow to suit your specific needs and improve your code review process.
